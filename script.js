@@ -375,3 +375,16 @@ document.addEventListener("click", function (e) {
   e.stopImmediatePropagation();
   window.location.href = "/product.html?id=" + encodeURIComponent(id);
 }, true);
+const products = [
+  {
+    id: 1,
+    name: "Classic T-Shirt",
+    category: "T-Shirts",
+    price: 600,
+    oldPrice: 800,
+    image: "assets/tshirt.jpg",
+    colors: ["Black", "White"],
+    sizes: ["M", "L"],
+    description: "Premium cotton t-shirt..."
+  }
+];
