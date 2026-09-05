@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1"
+    >
+
+    <title>VELOCE</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <header>
+
+        <a href="/" class="brand">
+            <img
+                src="images/logo_veloce.png"
+                class="logo"
+                height="77"
+            >
+        </a>
+
+        <button
+            id="langBtn"
+            class="lang-btn"
+        >
+            عربي
+        </button>
+
+        <button id="cartBtn">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span id="cartCount">0</span>
+        </button>
+
+    </header>
+
+
+    <main class="product-page">
+
+        <div id="productDetail">
+            Loading...
+        </div>
+
+
+        <section class="suggestions">
+
+            <h2
+                data-en="YOU MAY ALSO LIKE"
+                data-ar="قد يعجبك أيضًا"
+            >
+                YOU MAY ALSO LIKE
+            </h2>
+
+            <div
+                id="suggestedProducts"
+                class="products"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <div class="customer">
+
+        <input
+            id="customerName"
+            placeholder="Your name"
+        >
+
+        <input
+            id="customerPhone"
+            placeholder="Phone"
+        >
+
+        <input
+            id="customerAddress"
+            placeholder="Address"
+        >
+
+    </div>
+
+
+    <div class="cart-total">
+
+        <span
+            data-en="TOTAL"
+            data-ar="الإجمالي"
+        >
+            TOTAL
+        </span>
+
+        <strong id="cartTotal">
+            0.00 L.E
+        </strong>
+
+    </div>
+
+
+    <button
+        id="checkoutBtn"
+        class="checkout"
+        data-en="CHECKOUT"
+        data-ar="إتمام الطلب"
+    >
+        CHECKOUT
+    </button>
+
+
+    </div>
+    </div>
+
+
+    <script src="product.js?v=20260905description2"></script>
+
+</body>
+
+</html>

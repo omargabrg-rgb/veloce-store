@@ -1,0 +1,167 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VELOCE Admin Dashboard</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f4f4;color:#111;font-family:Arial,sans-serif}
+header{background:#111;color:#fff;padding:18px 5%;display:flex;justify-content:space-between;align-items:center}
+header b span{color:#d60000}header a{color:#fff;text-decoration:none}main{max-width:1300px;margin:25px auto;padding:0 20px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.stat,.panel{background:#fff;padding:20px}
+.stat b{font-size:28px;display:block}.stat small{color:#666}.panel{margin-top:20px}h2{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}input,select,textarea{width:100%;padding:10px;border:1px solid #ccc}
+button{padding:10px 13px;border:0;background:#111;color:#fff;cursor:pointer}.red{background:#d60000}.gray{background:#777}
+.msg{margin:10px 0;font-weight:bold}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left;vertical-align:middle}
+th{background:#111;color:#fff}td input{min-width:100px}.thumb{width:55px;height:55px;object-fit: contain;background:#eee}.inactive{opacity:.45}
+.variant-list{font-size:12px;color:#555;margin:5px 0}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:20}
+.modal.open{display:flex}.modal-box{background:#fff;width:min(760px,94vw);max-height:90vh;overflow:auto;padding:24px;box-shadow:0 20px 60px #0008}
+.modal-actions{display:flex;gap:8px;margin-top:18px}.builder-note{font-size:13px;color:#555}
+.color-add{display:flex;gap:8px;margin:14px 0}.color-add input{flex:1}.color-card{border:1px solid #ccc;padding:15px;margin:12px 0;background:#fafafa}
+.color-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ddd;padding-bottom:10px}
+.color-head strong{font-size:18px}.size-row{display:grid;grid-template-columns:1fr 120px 40px;gap:8px;margin:8px 0;align-items:center}
+.size-row input{height:38px}.size-row button{height:38px;padding:0;background:#d60000}.add-size{display:grid;grid-template-columns:1fr 120px auto;gap:8px;margin-top:12px}
+.add-size input{height:40px}.empty{padding:12px;background:#eee;color:#666;font-size:12px}.save-builder{background:#d60000}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.panel{overflow:auto}table{min-width:1100px}}
+</style></head>
+<body>
+<header><b>VELOCE <span>ADMIN DASHBOARD</span></b><a href="/admin/logout">LOGOUT</a></header>
+<main>
+<div class="stats"><div class="stat"><b id="sProducts">0</b><small>ALL PRODUCTS</small></div><div class="stat"><b id="sActive">0</b><small>ACTIVE</small></div><div class="stat"><b id="sHidden">0</b><small>HIDDEN</small></div><div class="stat"><b id="sOrders">0</b><small>ORDERS</small></div><div class="stat"><b id="sRevenue">0</b><small>REVENUE</small></div></div>
+
+<div class="panel"><h2>Add Product</h2><form id="addForm">
+<div class="grid"><input name="name" placeholder="Product name" required><input name="category" placeholder="Category e.g. shirts" required>
+<input name="price" type="number" step=".01" placeholder="Price" required><input name="old_price" type="number" step=".01" placeholder="Old price">
+<input name="stock" type="number" min="0" placeholder="Stock" required><textarea name="description" placeholder="Product description" rows="3"></textarea><input name="image" placeholder="Main Image URL/path (optional)">
+<input name="image_files" type="file" accept=".png,.jpg,.jpeg,.webp,.gif" multiple><small> You can select multiple images (one for each color).</small></div><br><button>ADD PRODUCT</button></form><div class="msg" id="msg"></div></div>
+
+<div class="panel"><h2>Manage Products</h2><div id="table">Loading...</div></div>
+<div class="panel"><h2>Orders</h2><div id="orders">Loading...</div></div>
+</main>
+
+<div class="modal" id="variantModal"><div class="modal-box">
+<h2 id="variantTitle">Product Variants</h2>
+<p class="builder-note">أضف اللون أولًا، وبعدها داخل كل لون أضف المقاسات والكمية الخاصة بهذا اللون.</p>
+
+<div class="color-add"><input id="newColorName" placeholder="اكتب اللون — Black / White / Red"><button type="button" onclick="addColor()">+ ADD COLOR</button></div>
+<div id="colorBuilder"></div>
+
+<div class="modal-actions"><button class="save-builder" onclick="saveBuilder()">SAVE PRODUCT VARIANTS</button><button class="gray" onclick="closeVariants()">CANCEL</button></div>
+</div></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const escAttr=esc;
+async function api(u,o={}){const r=await fetch(u,o);let d={};try{d=await r.json()}catch{}if(!r.ok||!d.success)throw Error(d.message||("HTTP "+r.status));return d}
+async function stats(){let d=await api('/api/admin/stats');$('#sProducts').textContent=d.products;$('#sActive').textContent=d.active;$('#sHidden').textContent=d.hidden;$('#sOrders').textContent=d.orders;$('#sRevenue').textContent=Number(d.revenue).toFixed(2)+' L.E'}
+
+let variantPid=null, variantName="", builder=[];
+
+function openVariants(pid,name,v){
+ variantPid=pid;variantName=name;
+ const colors=v?.colors||[], combos=v?.combinations||[];
+ builder=colors.map(c=>({name:c.name,sizes:combos.filter(x=>String(x.color)===String(c.name)).map(x=>({name:x.size,stock:Number(x.stock||0)}))}));
+ if(!builder.length && colors.length)builder=colors.map(c=>({name:c.name,sizes:[]}));
+ $('#variantTitle').textContent='Variants: '+name;
+ renderBuilder();$('#variantModal').classList.add('open');
+}
+function closeVariants(){variantPid=null;builder=[];$('#variantModal').classList.remove('open')}
+
+function renderBuilder(){
+ const box=$('#colorBuilder');
+ if(!builder.length){box.innerHTML='<div class="empty">اكتب اسم اللون فوق واضغط ADD COLOR.</div>';return}
+ box.innerHTML=builder.map((c,ci)=>`
+ <div class="color-card">
+  <div class="color-head"><strong>${esc(c.name)}</strong><button type="button" class="red" onclick="removeColor(${ci})">REMOVE COLOR</button></div>
+  <div style="margin-top:12px;font-weight:bold">المقاسات والكميات للون ${esc(c.name)}</div>
+  ${c.sizes.length?c.sizes.map((s,si)=>`
+   <div class="size-row">
+    <input value="${escAttr(s.name)}" oninput="builder[${ci}].sizes[${si}].name=this.value">
+    <input type="number" min="0" value="${Number(s.stock||0)}" oninput="builder[${ci}].sizes[${si}].stock=Math.max(0,parseInt(this.value||0))">
+    <button type="button" onclick="removeSize(${ci},${si})">×</button>
+   </div>`).join(""):'<div class="empty">مفيش مقاسات للون ده لسه.</div>'}
+  <div class="add-size">
+   <input id="size_${ci}" placeholder="المقاس — S / M / L / XL">
+   <input id="stock_${ci}" type="number" min="0" value="0" placeholder="العدد">
+   <button type="button" onclick="addSize(${ci})">+ ADD SIZE</button>
+  </div>
+ </div>`).join("");
+}
+function addColor(){
+ const i=$('#newColorName'),name=i.value.trim();if(!name)return;
+ if(builder.some(x=>x.name.toLowerCase()===name.toLowerCase()))return;
+ builder.push({name,sizes:[]});i.value="";renderBuilder();
+}
+function removeColor(i){builder.splice(i,1);renderBuilder()}
+function addSize(ci){
+ const n=$('#size_'+ci),q=$('#stock_'+ci),name=n.value.trim(),stock=Math.max(0,parseInt(q.value||0));
+ if(!name)return;
+ const found=builder[ci].sizes.find(x=>x.name.toLowerCase()===name.toLowerCase());
+ if(found)found.stock=stock;else builder[ci].sizes.push({name,stock});
+ renderBuilder();
+}
+function removeSize(ci,si){builder[ci].sizes.splice(si,1);renderBuilder()}
+
+async function saveBuilder(){
+ if(!variantPid)return;
+ const combinations=[];
+ builder.forEach(c=>c.sizes.forEach(s=>combinations.push({color:c.name,size:s.name,stock:Number(s.stock||0)})));
+ const colorMap=builder.map(c=>({name:c.name,stock:c.sizes.reduce((a,s)=>a+Number(s.stock||0),0)}));
+ const sizeNames=[...new Set(builder.flatMap(c=>c.sizes.map(s=>s.name)))];
+ const sizeMap=sizeNames.map(n=>({name:n,stock:builder.reduce((a,c)=>a+Number(c.sizes.find(s=>s.name===n)?.stock||0),0)}));
+ try{
+  await api('/api/admin/products/'+variantPid+'/variants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({colors:colorMap,sizes:sizeMap,combinations})});
+  closeVariants();await load();await stats();$('#msg').textContent='Variants saved';
+ }catch(e){$('#msg').textContent=e.message}
+}
+
+async function load(){
+ let d=await api('/api/admin/products');
+ $('#table').innerHTML='<table><tr><th>ID</th><th>Image</th><th>Name</th><th>Category</th><th>Description</th><th>Price</th><th>Old</th><th>Stock</th><th>Variants</th><th>Status</th><th>Actions</th></tr>'+
+ d.products.map(p=>`<tr class="${p.active?'':'inactive'}"><td>${p.id}</td><td>${p.image?`<img class="thumb" src="${esc(p.image)}">`:'—'}<div style="font-size:11px;color:#777">${(p.images||[]).length||0} images</div></td>
+ <td><input id="n${p.id}" value="${esc(p.name)}"></td><td><input id="c${p.id}" value="${esc(p.category)}"></td><td><textarea id="d${p.id}" rows="2">${esc(p.description||"")}</textarea></td>
+ <td><input id="p${p.id}" type="number" step=".01" value="${p.price}"></td><td><input id="o${p.id}" type="number" step=".01" value="${p.old_price??''}"></td>
+ <td><input id="s${p.id}" type="number" min="0" value="${p.stock}"></td>
+ <td><div class="variant-list">${esc((p.variants?.colors||[]).map(x=>x.name).join(', ')||'No colors')}</div><button onclick='openVariants(${p.id},${JSON.stringify(p.name)},${JSON.stringify(p.variants||{})})'>EDIT COLORS & SIZES</button></td>
+ <td>${p.active?'ACTIVE':'HIDDEN'}</td><td><button onclick="save(${p.id})">SAVE</button> <button class="${p.active?'red':'gray'}" onclick="toggleP(${p.id})">${p.active?'HIDE':'RESTORE'}</button> <button class="red" onclick="delP(${p.id})">DELETE</button></td></tr>`).join('')+'</table>'
+}
+async function save(id){try{await api('/api/admin/products/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('#n'+id).value,category:$('#c'+id).value,description:$('#d'+id).value,price:$('#p'+id).value,old_price:$('#o'+id).value,stock:$('#s'+id).value})});$('#msg').textContent='Saved';await load();await stats()}catch(e){$('#msg').textContent=e.message}}
+async function toggleP(id){try{await api('/api/admin/products/'+id+'/toggle',{method:'POST'});await load();await stats()}catch(e){$('#msg').textContent=e.message}}
+async function delP(id){if(!confirm('Permanently delete this product?'))return;try{await api('/api/admin/products/'+id,{method:'DELETE'});await load();await stats()}catch(e){$('#msg').textContent=e.message}}
+$('#addForm').onsubmit=async e=>{e.preventDefault();try{let r=await fetch('/api/admin/products',{method:'POST',body:new FormData(e.target)}),d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'Add failed');e.target.reset();$('#msg').textContent='Product added';await load();await stats()}catch(x){$('#msg').textContent=x.message}};
+async function loadOrders(){try{let d=await api('/api/admin/orders');$('#orders').innerHTML=d.orders.length?'<table><tr><th>Order</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>#${o.id}</td><td>${o.created_at?new Date(o.created_at).toLocaleString():'—'}</td><td><b>${esc(o.customer_name||'—')}</b><br>${esc(o.customer_phone||'')}<br>${esc(o.customer_address||'')}</td><td>${o.items.map(i=>esc(i.name)+' × '+i.quantity+' ('+Number(i.unit_price).toFixed(2)+' L.E)').join('<br>')}</td><td><b>${Number(o.total).toFixed(2)} L.E</b></td><td><select onchange="setStatus(${o.id},this.value)">${['Pending','Confirmed','Shipped','Delivered','Cancelled'].map(x=>`<option ${x===o.status?'selected':''}>${x}</option>`).join('')}</select></td></tr>`).join('')+'</table>':'<p>No orders yet.</p>'}catch(e){$('#orders').textContent=e.message}}
+async function setStatus(id,status){try{await api('/api/admin/orders/'+id+'/status',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});await loadOrders();await stats()}catch(e){$('#msg').textContent=e.message}}
+load();stats();loadOrders();
+</script>
+<section class="admin-section shipping-settings">
+  <h2>Shipping Settings</h2>
+  <p>Change delivery price for each governorate.</p>
+  <div id="shippingSettingsList">Loading...</div>
+</section>
+<script>
+async function loadShippingSettings(){
+  const box=document.getElementById('shippingSettingsList');
+  if(!box)return;
+  try{
+    const r=await fetch('/api/admin/shipping');
+    const d=await r.json();
+    if(!d.success) throw new Error(d.message||'Failed');
+    box.innerHTML=d.options.map(x=>`
+      <div class="shipping-setting-row">
+        <div><strong>${x.en}</strong><small>${x.ar}</small></div>
+        <input id="ship-${x.id}" type="number" min="0" step="1" value="${x.fee}">
+        <button type="button" onclick="saveShipping(${x.id})">Save</button>
+      </div>`).join('');
+  }catch(e){box.textContent='Could not load shipping settings'}
+}
+async function saveShipping(id){
+  const fee=document.getElementById('ship-'+id).value;
+  const r=await fetch('/api/admin/shipping/'+id,{
+    method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fee})
+  });
+  const d=await r.json();
+  if(!d.success){alert(d.message||'Could not save');return}
+  alert('Shipping price saved');
+}
+document.addEventListener('DOMContentLoaded',loadShippingSettings);
+</script>
+</body></html>

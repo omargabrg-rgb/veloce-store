@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>VELOCE | Fashion store</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <header>
+        <a href="#home" class="brand">
+            <img
+                src="images/logo_veloce.png"
+                alt="VELOCE"
+                class="logo"
+                height="77"
+            >
+        </a>
+
+        <nav class="header-nav">
+            <ul>
+                <li>
+                    <a
+                        href="#home"
+                        data-en="HOME"
+                        data-ar="الرئيسية"
+                    >
+                        HOME
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        href="#shop"
+                        data-en="SHOP"
+                        data-ar="المتجر"
+                    >
+                        SHOP
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        href="#about"
+                        data-en="ABOUT"
+                        data-ar="عن المتجر"
+                    >
+                        ABOUT
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        href="#contact"
+                        data-en="CONTACT"
+                        data-ar="تواصل معنا"
+                    >
+                        CONTACT
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <button id="langBtn" class="lang-btn">
+            عربي
+        </button>
+
+        <div class="nav-icons">
+            <button id="searchBtn">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+
+            <button id="cartBtn">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span id="cartCount">0</span>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+
+        <p
+            class="sub-tittle"
+            data-en="NEW SUMMER COLLECTION"
+            data-ar="مجموعة الصيف الجديدة"
+        >
+            NEW SUMMER COLLECTION
+        </p>
+
+        <h1
+            data-en="MOVE WITH <span>STYLE</span>"
+            data-ar="تحرك <span>بأناقة</span>"
+        >
+            MOVE WITH <span>STYLE</span>
+        </h1>
+
+        <p
+            data-en="Discover our premium collection"
+            data-ar="اكتشف مجموعتنا المميزة"
+        >
+            Discover our premium collection
+        </p>
+
+        <a
+            href="#shop"
+            class="btn"
+            data-en="SHOP NOW"
+            data-ar="تسوق الآن"
+        >
+            SHOP NOW
+        </a>
+
+    </section>
+
+
+    <!-- Shop Section -->
+    <section class="shop" id="shop">
+
+        <nav class="shop-nav">
+
+            <h1
+                data-en="VELOCE <span>STORE</span>"
+                data-ar="VELOCE <span>متجر</span>"
+            >
+                VELOCE <span>STORE</span>
+            </h1>
+
+            <ul id="categoryNav"></ul>
+
+        </nav>
+
+        <div id="collection" class="collection">
+            <div class="loading">
+                Loading collection...
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- About Section -->
+    <section class="about" id="about">
+
+        <h5>VELOCE STORE</h5>
+
+        <h1
+            data-en="Fashion For Modern Generation"
+            data-ar="أزياء للجيل العصري"
+        >
+            Fashion For Modern Generation
+        </h1>
+
+        <p>
+            Veloce store opened in <b>2022</b>.
+            We always offer <b>highest quality</b>
+            and <b>competitive price.</b>
+        </p>
+
+        <p>
+            <ins>
+                VELOCE NOT ONLY FASHION STORE, IT'S A LIFE STYLE
+            </ins>
+        </p>
+
+    </section>
+
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+
+        <h2>CONTACT</h2>
+
+        <p>
+            <span
+                data-en="For orders and inquiries, contact VELOCE."
+                data-ar="للطلبات والاستفسارات، تواصل مع VELOCE."
+            >
+                For orders and inquiries, contact VELOCE.
+            </span>
+        </p>
+
+        <div class="social-icons">
+
+            <a
+                href="https://www.instagram.com/veloceegy?igsi=MWIxZnhubGlmczFuNA=="
+                target="_blank"
+                aria-label="Instagram"
+            >
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+
+            <a
+                href="https://www.facebook.com/share/1SDbscRndM/?mibextid=wwXIfr"
+                target="_blank"
+                aria-label="Facebook"
+            >
+                <i class="fa-brands fa-facebook-f"></i>
+            </a>
+
+            <a
+                href="https://wa.me/201017273454"
+                target="_blank"
+                aria-label="WhatsApp"
+            >
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+
+            <a
+                href="https://www.tiktok.com/@ahmed.abd.elmohsen1?_r=1&_t=ZS-99Slw244iAB"
+                target="_blank"
+                aria-label="TikTok"
+            >
+                <i class="fa-brands fa-tiktok"></i>
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- Search Overlay -->
+    <div id="searchOverlay" class="overlay hidden">
+
+        <div class="search-box">
+
+            <button
+                class="close"
+                data-close="searchOverlay"
+            >
+                ×
+            </button>
+
+            <input
+                id="searchInput"
+                data-placeholder-en="Search products..."
+                data-placeholder-ar="ابحث عن المنتجات..."
+                placeholder="Search products..."
+            >
+
+            <div id="searchResults"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Cart Overlay -->
+    <div id="cartOverlay" class="overlay hidden">
+
+        <div class="cart-box">
+
+            <button
+                class="close"
+                data-close="cartOverlay"
+            >
+                ×
+            </button>
+
+            <h2
+                data-en="YOUR BAG"
+                data-ar="سلة المشتريات"
+            >
+                YOUR BAG
+            </h2>
+
+
+            <div id="cartItems"></div>
+
+
+            <!-- Customer Information -->
+            <div class="customer">
+
+                <input
+                    id="customerName"
+                    data-placeholder-en="Your name"
+                    data-placeholder-ar="اسمك"
+                    placeholder="Your name"
+                >
+
+                <input
+                    id="customerPhone"
+                    data-placeholder-en="Phone"
+                    data-placeholder-ar="رقم الهاتف"
+                    placeholder="Phone"
+                >
+
+                <input
+                    id="customerAddress"
+                    data-placeholder-en="Address"
+                    data-placeholder-ar="العنوان"
+                    placeholder="Address"
+                >
+
+            </div>
+
+
+            <!-- Shipping -->
+            <div class="shipping-box">
+
+                <label
+                    for="customerGovernorate"
+                    data-en="Governorate"
+                    data-ar="المحافظة"
+                >
+                    Governorate
+                </label>
+
+                <select id="customerGovernorate">
+
+                    <option
+                        value=""
+                        data-en="Select governorate"
+                        data-ar="اختر المحافظة"
+                    >
+                        Select governorate
+                    </option>
+
+                </select>
+
+                <div class="shipping-fee-row">
+
+                    <span
+                        data-en="Shipping"
+                        data-ar="التوصيل"
+                    >
+                        Shipping
+                    </span>
+
+                    <strong id="shippingFee">
+                        0.00 L.E
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- Total -->
+            <div class="cart-total">
+                TOTAL
+                <strong id="cartTotal">
+                    0.00 L.E
+                </strong>
+            </div>
+
+
+            <!-- Checkout -->
+            <button
+                id="checkoutBtn"
+                class="checkout"
+                data-en="CHECKOUT"
+                data-ar="إتمام الطلب"
+            >
+                CHECKOUT
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div id="toast"></div>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
